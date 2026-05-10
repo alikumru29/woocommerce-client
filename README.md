@@ -52,7 +52,8 @@ otomatik retry ve Türkçe-dostu hata mesajları sunar.
   header'ına saygı duyar.
 - **Async iterator pagination** — `for await (const item of wc.products.iterate())` ile
   tüm sayfalar otomatik dolaşılır.
-- **HTTPS Basic Auth** — Tek auth modu; HTTP store URL'leri reddedilir (güvenlik).
+- **İki auth modu** — `query` (default, Cloudflare-dostu) veya `basic` (klasik header).
+- **Credential-safe loglar** — log/hata mesajlarında URL'deki credentials otomatik maskelenir.
 - **Yapılandırılabilir logger** — `pino` tabanlı, sessiz mod desteği.
 - **ESM-only, Node 20+** — Modern fetch (`undici`).
 
@@ -122,6 +123,7 @@ new WooCommerceClient({
   consumerSecret: "cs_xxx",
 
   // Opsiyonel
+  authMethod: "query",       // "query" (default, Cloudflare-friendly) | "basic"
   version: "wc/v3",          // Default: "wc/v3" — alternatif: "wc/v2", "wc/v1"
   timeout: 30_000,           // ms, default 30s
   retries: 3,                // Network/5xx/429 için yeniden deneme
@@ -135,12 +137,39 @@ new WooCommerceClient({
 |------|---------|----------|
 | `url` | — | Mağaza URL'i. **HTTPS zorunlu.** |
 | `consumerKey` / `consumerSecret` | — | WC REST API anahtarı. |
+| `authMethod` | `"query"` | `"query"` → credentials URL'de; `"basic"` → Authorization header. |
 | `version` | `"wc/v3"` | API sürümü. |
 | `timeout` | `30000` | Tek isteğin maksimum süresi (ms). |
 | `retries` | `3` | Hata sonrası kaç kez yeniden denenecek. |
 | `retryBaseDelay` | `500` | Exponential backoff başlangıç. |
 | `retryMaxDelay` | `30000` | Maks. tek bir retry beklemesi. |
 | `logger` | `pino()` | Kendi pino instance'ınızı verebilirsiniz. |
+
+### Auth modu — hangisi ne zaman?
+
+WooCommerce, HTTPS üzerinde her iki yöntemi de **resmi olarak** destekler:
+
+```ts
+// query mod (default) — Cloudflare/managed-host arkası için tercih edilen
+new WooCommerceClient({ url, consumerKey, consumerSecret });
+// equivalent to:
+new WooCommerceClient({ url, consumerKey, consumerSecret, authMethod: "query" });
+
+// basic mod — düz hosting, geleneksel header tercih edenler için
+new WooCommerceClient({ url, consumerKey, consumerSecret, authMethod: "basic" });
+```
+
+| Ölçüt | `query` (default) | `basic` |
+|-------|-------------------|---------|
+| Authorization header | gönderilmez | `Basic base64(...)` |
+| Credentials nerede? | URL query string | request header |
+| Cloudflare WAF (Bot Fight, managed rules) | **takılmaz** ✓ | sıkça takılır ✗ |
+| Reverse proxy access log'larında credentials | görünebilir | görünmez |
+| WooCommerce resmi destek | ✓ | ✓ |
+
+**Pratik kural:** Mağaza Cloudflare/Sucuri/Akamai gibi bir CDN/WAF arkasındaysa `query`,
+değilse istediğini seç. Bu paket log'larda URL'deki credentials'ı otomatik maskeler
+(`consumer_secret=***`), o yüzden `query` modunda da log güvenliği korunur.
 
 > **Önemli:** Tüm dış servis çağrıları timeout + retry sarılı. Hata kategorisine göre
 > retry edilir (network/408/429/5xx); 4xx hataları (auth, validation, not found)
@@ -631,12 +660,23 @@ src/
 
 ## Sıkça sorulanlar
 
+### Cloudflare/CDN arkası mağazalarda 403 alıyorum
+
+`Authorization: Basic ...` header pattern'i çoğu Cloudflare managed ruleset'i ve
+Bot Fight Mode tarafından "WordPress brute-force" olarak işaretleniyor. **Çözüm:**
+default `authMethod: "query"` modunu kullan — credentials URL query string'inde
+gider, Authorization header gönderilmez, WAF kuralları tetiklenmez.
+
+```ts
+new WooCommerceClient({ url, consumerKey, consumerSecret });
+// authMethod default'u "query" — değiştirmene gerek yok.
+```
+
 ### Neden HTTP store URL'i reddediliyor?
 
-WooCommerce, HTTPS dışı mağazalarda Basic Auth desteklemez (kimlik bilgileri açık
-gider). Bu paket de aynı politikayı uygular. HTTP'li bir staging/eski mağaza
-kullanmanız gerekirse OAuth 1.0a desteği eklemeden bu pakette mümkün değildir —
-bu özellik kapsam dışı bırakıldı.
+Her iki auth modunda da credentials transmit edilir (header ya da query string).
+HTTP üzerinde bu açık gider — bu yüzden paket HTTPS olmayan store URL'lerini
+reddediyor.
 
 ### Neden bütün endpoint'ler için Zod şeması yok?
 

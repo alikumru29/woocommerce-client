@@ -6,7 +6,10 @@ Bu repo **standalone** bir TypeScript paketidir. Monorepo'nun parçası DEĞİL 
 
 - **Sadece giden REST client.** WooCommerce REST API v3 (`/wp-json/wc/v3`) endpoint'lerine istek atar.
 - **Library only.** `import { WooCommerceClient } from "woocommerce-client"` ile kullanılır. HTTP servisi YOK.
-- **Auth: HTTPS Basic Auth.** Consumer Key + Consumer Secret. OAuth 1.0a desteklenmez.
+- **Auth (HTTPS-only):** iki resmi mod desteklenir, kullanıcı seçer:
+  - `authMethod: "query"` (default) — credentials URL query string'inde (`?consumer_key=&consumer_secret=`); Cloudflare/managed-host WAF kuralları tetiklenmez.
+  - `authMethod: "basic"` — klasik Authorization header.
+  - OAuth 1.0a desteklenmez.
 
 ## Stack
 

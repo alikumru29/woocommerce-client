@@ -1,5 +1,10 @@
 import { type Dispatcher } from "undici";
-import { assertHttpsUrl, buildBasicAuthHeader } from "./auth.js";
+import {
+  appendQueryAuth,
+  assertHttpsUrl,
+  buildBasicAuthHeader,
+  type AuthMethod,
+} from "./auth.js";
 import { executeRequest, type HttpConfig, type HttpMethod, type HttpResponse } from "./http.js";
 import { createLogger, type Logger } from "./logger.js";
 import { CouponsService } from "./resources/coupons.js";
@@ -28,6 +33,16 @@ export interface WooCommerceClientConfig {
   consumerKey: string;
   /** Consumer Secret (cs_...). */
   consumerSecret: string;
+  /**
+   * Auth metodu. WooCommerce ikisini de resmi olarak destekler:
+   *
+   * - `"query"` (default) — credentials URL query string'inde gider. Authorization
+   *   header gönderilmez; Cloudflare/managed-host WAF kuralları (Basic-Auth pattern
+   *   match) tetiklenmez. Üretim ortamlarında tercih edilen.
+   * - `"basic"` — klasik HTTP Basic Authentication header. Cloudflare arkası olmayan
+   *   mağazalar için tercih edilebilir.
+   */
+  authMethod?: AuthMethod;
   /** API sürümü. Default: "wc/v3". */
   version?: WooApiVersion;
   /** Default istek timeout (ms). Default: 30000. */
@@ -71,7 +86,10 @@ export interface GenericRequestOptions extends RequestOptions {
  */
 export class WooCommerceClient {
   private readonly baseUrl: string;
+  private readonly authMethod: AuthMethod;
   private readonly authHeader: string;
+  private readonly consumerKey: string;
+  private readonly consumerSecret: string;
   private readonly httpConfig: HttpConfig;
 
   // Core resources (zod tipli).
@@ -93,10 +111,17 @@ export class WooCommerceClient {
 
   constructor(config: WooCommerceClientConfig) {
     const url = assertHttpsUrl(config.url);
-    this.authHeader = buildBasicAuthHeader({
-      consumerKey: config.consumerKey,
-      consumerSecret: config.consumerSecret,
-    });
+    this.consumerKey = config.consumerKey;
+    this.consumerSecret = config.consumerSecret;
+    this.authMethod = config.authMethod ?? "query";
+    // Basic mode için header'ı önceden hesaplayalım. Query mode'da boş.
+    this.authHeader =
+      this.authMethod === "basic"
+        ? buildBasicAuthHeader({
+            consumerKey: config.consumerKey,
+            consumerSecret: config.consumerSecret,
+          })
+        : "";
 
     const version = config.version ?? "wc/v3";
     // /wp-json/<version> base path. URL'in path'i varsa korunur.
@@ -169,7 +194,7 @@ export class WooCommerceClient {
     );
   }
 
-  /** Base URL ve path'i birleştirir, query string'i ekler. */
+  /** Base URL ve path'i birleştirir, query string'i ekler, query auth modunda credentials'ı iliştirir. */
   private buildUrl(path: string, query?: Record<string, unknown>): string {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
     const url = new URL(`${this.baseUrl}${cleanPath}`);
@@ -185,6 +210,13 @@ export class WooCommerceClient {
         }
       }
     }
-    return url.toString();
+    let urlString = url.toString();
+    if (this.authMethod === "query") {
+      urlString = appendQueryAuth(urlString, {
+        consumerKey: this.consumerKey,
+        consumerSecret: this.consumerSecret,
+      });
+    }
+    return urlString;
   }
 }

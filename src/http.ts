@@ -1,4 +1,5 @@
 import { request as undiciRequest, type Dispatcher } from "undici";
+import { sanitizeUrlForLog } from "./auth.js";
 import {
   errorForStatus,
   WooNetworkError,
@@ -14,11 +15,14 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 /** Düşük seviye HTTP request opts. */
 export interface LowLevelRequestOptions extends RequestOptions {
   method: HttpMethod;
-  /** Tam URL (base + path + query). */
+  /** Tam URL (base + path + query, varsa query-string auth dahil). */
   url: string;
   /** JSON body (otomatik serialize edilir). */
   body?: unknown;
-  /** Auth header değeri (örn. "Basic xxx"). */
+  /**
+   * Auth header değeri (örn. `"Basic xxx"`). Boş string verildiğinde Authorization header
+   * gönderilmez — query-string auth modunda kullanılır.
+   */
   authHeader: string;
 }
 
@@ -86,7 +90,7 @@ export async function executeRequest<T = unknown>(
           delay,
           status: lastError.status,
           code: lastError.code,
-          url: opts.url,
+          url: sanitizeUrlForLog(opts.url),
         },
         "WooCommerce request failed, retrying",
       );
@@ -113,11 +117,13 @@ async function singleAttempt<T>(
   }
 
   const headers: Record<string, string> = {
-    Authorization: opts.authHeader,
     Accept: "application/json",
     "User-Agent": "woocommerce-client/0.1.0",
     ...opts.headers,
   };
+  if (opts.authHeader) {
+    headers["Authorization"] = opts.authHeader;
+  }
 
   let bodyPayload: string | undefined;
   if (opts.body !== undefined && opts.body !== null) {
@@ -139,7 +145,7 @@ async function singleAttempt<T>(
     const aborted = controller.signal.aborted;
     throw new WooNetworkError(
       aborted ? `Request timed out after ${timeoutMs}ms` : "Network error",
-      { cause: err, endpoint: opts.url, method: opts.method },
+      { cause: err, endpoint: sanitizeUrlForLog(opts.url), method: opts.method },
     );
   }
 
@@ -161,8 +167,9 @@ async function singleAttempt<T>(
       ? errBody.message
       : `WooCommerce request failed with status ${status}`;
 
+  const sanitizedUrl = sanitizeUrlForLog(opts.url);
   const wooErr = errorForStatus(status, message, {
-    endpoint: opts.url,
+    endpoint: sanitizedUrl,
     method: opts.method,
     code: errBody?.code,
     body: parsed,
@@ -171,9 +178,8 @@ async function singleAttempt<T>(
   if (wooErr instanceof WooRateLimitError) {
     const retryAfter = parseRetryAfter(respHeaders["retry-after"]);
     if (retryAfter !== undefined) {
-      // readonly bypass: sınıfta readonly olduğu için constructor'a ekle yerine yeni instance.
       throw new WooRateLimitError(message, {
-        endpoint: opts.url,
+        endpoint: sanitizedUrl,
         method: opts.method,
         code: errBody?.code,
         status,

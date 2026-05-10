@@ -11,6 +11,8 @@ export {
   type GenericRequestOptions,
 } from "./client.js";
 
+export type { AuthMethod } from "./auth.js";
+
 export {
   WooError,
   WooAuthError,

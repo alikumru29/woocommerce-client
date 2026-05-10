@@ -100,6 +100,7 @@ describe("http layer", () => {
       url: "https://store.test",
       consumerKey: "ck_test",
       consumerSecret: "cs_test",
+      authMethod: "basic",
       logger: createLogger({ level: "silent" }),
       dispatcher: agent,
       retries: 1,

@@ -1,9 +1,20 @@
 /**
- * WooCommerce REST API için HTTPS Basic Auth header üretir.
+ * WooCommerce REST API için auth helper'ları (HTTPS-only).
  *
- * WooCommerce iki auth modu destekler: Basic Auth (HTTPS) ve OAuth 1.0a (HTTP).
- * Bu paket yalnızca Basic Auth'u destekler; HTTPS olmayan store URL'lerinde reddedilir.
+ * İki auth modu desteklenir, ikisi de WooCommerce tarafından resmi olarak kabul edilir:
+ *
+ * 1. **query** (default) — credentials URL query string'ine konur
+ *    (`?consumer_key=...&consumer_secret=...`). Authorization header gönderilmez,
+ *    böylece Cloudflare gibi reverse proxy WAF'larının Basic-Auth pattern kuralları
+ *    tetiklenmez. Üretim ortamlarında en geniş uyumluluk.
+ * 2. **basic** — klasik HTTP Basic Authentication header
+ *    (`Authorization: Basic base64(key:secret)`). Cloudflare/yönetilen-host arkasında
+ *    olmayan mağazalar için tercih edilebilir.
+ *
+ * Her iki mod da HTTPS zorunludur — düz HTTP store URL'leri reddedilir.
  */
+
+export type AuthMethod = "query" | "basic";
 
 const HTTPS_PROTOCOL = "https:";
 
@@ -28,7 +39,7 @@ export function buildBasicAuthHeader(creds: BasicAuthCredentials): string {
 }
 
 /**
- * Verilen URL'in HTTPS olduğunu doğrular. Basic Auth credentials'ı düz HTTP üzerinden
+ * Verilen URL'in HTTPS olduğunu doğrular. Credentials'ı düz HTTP üzerinden
  * göndermek güvensiz — bu yüzden HTTP store URL'leri reddedilir.
  *
  * @throws Error — URL parse edilemezse veya HTTPS değilse.
@@ -42,9 +53,38 @@ export function assertHttpsUrl(url: string): URL {
   }
   if (parsed.protocol !== HTTPS_PROTOCOL) {
     throw new Error(
-      `WooCommerce auth: HTTPS required for Basic Auth, got "${parsed.protocol}". ` +
+      `WooCommerce auth: HTTPS required, got "${parsed.protocol}". ` +
         `Use a TLS-enabled store URL.`,
     );
   }
   return parsed;
+}
+
+/**
+ * Bir URL'e WooCommerce query-string auth parametrelerini ekler.
+ * Mevcut query'leri korur.
+ */
+export function appendQueryAuth(rawUrl: string, creds: BasicAuthCredentials): string {
+  if (!creds.consumerKey || !creds.consumerSecret) {
+    throw new Error("WooCommerce auth: consumerKey and consumerSecret are required");
+  }
+  const url = new URL(rawUrl);
+  url.searchParams.set("consumer_key", creds.consumerKey);
+  url.searchParams.set("consumer_secret", creds.consumerSecret);
+  return url.toString();
+}
+
+/**
+ * Log'lar için URL'deki credentials'ı maskeler (`consumer_secret=***`).
+ * Üretim log'larına credentials'ın kaçmasını engeller.
+ */
+export function sanitizeUrlForLog(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl);
+    if (url.searchParams.has("consumer_key")) url.searchParams.set("consumer_key", "***");
+    if (url.searchParams.has("consumer_secret")) url.searchParams.set("consumer_secret", "***");
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
 }
