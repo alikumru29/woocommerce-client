@@ -15,14 +15,21 @@ describe("http layer", () => {
     cleanup = () => agent.close();
 
     const expected = `Basic ${Buffer.from("ck_test:cs_test").toString("base64")}`;
+    let seenAuth: string | undefined;
+
     mockPool
-      .intercept({ path: "/wp-json/wc/v3/products/1", method: "GET" })
-      .reply(200, { id: 1, name: "Test" }, { headers: { "content-type": "application/json" } })
-      .delay(0);
+      .intercept({
+        path: "/wp-json/wc/v3/products/1",
+        method: "GET",
+        headers: (h: Record<string, string>) => {
+          seenAuth = h["authorization"] ?? h["Authorization"];
+          return true;
+        },
+      })
+      .reply(200, { id: 1, name: "Test" }, { headers: { "content-type": "application/json" } });
 
     await client.products.get(1);
-    // MockAgent doğrudan capture etmiyor; doğrulama için ayrı bir intercept'le.
-    expect(expected).toMatch(/^Basic /);
+    expect(seenAuth).toBe(expected);
   });
 
   it("maps 401 to WooAuthError", async () => {
