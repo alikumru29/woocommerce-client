@@ -21,29 +21,29 @@ export const CouponSchema = z
   .object({
     id: z.number(),
     code: z.string(),
-    amount: z.string().optional(),
+    amount: z.string().nullable().optional(),
     date_created: z.string().nullable().optional(),
     date_modified: z.string().nullable().optional(),
     discount_type: CouponDiscountTypeSchema.optional(),
-    description: z.string().optional(),
+    description: z.string().nullable().optional(),
     date_expires: z.string().nullable().optional(),
-    usage_count: z.number().optional(),
-    individual_use: z.boolean().optional(),
+    usage_count: z.number().nullable().optional(),
+    individual_use: z.boolean().nullable().optional(),
     product_ids: z.array(z.number()).optional(),
     excluded_product_ids: z.array(z.number()).optional(),
     usage_limit: z.number().nullable().optional(),
     usage_limit_per_user: z.number().nullable().optional(),
     limit_usage_to_x_items: z.number().nullable().optional(),
-    free_shipping: z.boolean().optional(),
+    free_shipping: z.boolean().nullable().optional(),
     product_categories: z.array(z.number()).optional(),
     excluded_product_categories: z.array(z.number()).optional(),
-    exclude_sale_items: z.boolean().optional(),
-    minimum_amount: z.string().optional(),
-    maximum_amount: z.string().optional(),
+    exclude_sale_items: z.boolean().nullable().optional(),
+    minimum_amount: z.string().nullable().optional(),
+    maximum_amount: z.string().nullable().optional(),
     email_restrictions: z.array(z.string()).optional(),
     used_by: z.array(z.string()).optional(),
     meta_data: z
-      .array(z.object({ id: z.number().optional(), key: z.string(), value: z.unknown() }))
+      .array(z.object({ id: z.number().nullable().optional(), key: z.string(), value: z.unknown() }))
       .optional(),
   })
   .passthrough();

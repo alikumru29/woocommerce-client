@@ -12,17 +12,17 @@ import { parseArray, parseOne } from "./_helpers.js";
 
 const AddressSchema = z
   .object({
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    company: z.string().optional(),
-    address_1: z.string().optional(),
-    address_2: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    postcode: z.string().optional(),
-    country: z.string().optional(),
-    email: z.string().optional(),
-    phone: z.string().optional(),
+    first_name: z.string().nullable().optional(),
+    last_name: z.string().nullable().optional(),
+    company: z.string().nullable().optional(),
+    address_1: z.string().nullable().optional(),
+    address_2: z.string().nullable().optional(),
+    city: z.string().nullable().optional(),
+    state: z.string().nullable().optional(),
+    postcode: z.string().nullable().optional(),
+    country: z.string().nullable().optional(),
+    email: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -32,16 +32,16 @@ export const CustomerSchema = z
     date_created: z.string().nullable().optional(),
     date_modified: z.string().nullable().optional(),
     email: z.string(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    role: z.string().optional(),
-    username: z.string().optional(),
+    first_name: z.string().nullable().optional(),
+    last_name: z.string().nullable().optional(),
+    role: z.string().nullable().optional(),
+    username: z.string().nullable().optional(),
     billing: AddressSchema.optional(),
     shipping: AddressSchema.optional(),
-    is_paying_customer: z.boolean().optional(),
-    avatar_url: z.string().optional(),
+    is_paying_customer: z.boolean().nullable().optional(),
+    avatar_url: z.string().nullable().optional(),
     meta_data: z
-      .array(z.object({ id: z.number().optional(), key: z.string(), value: z.unknown() }))
+      .array(z.object({ id: z.number().nullable().optional(), key: z.string(), value: z.unknown() }))
       .optional(),
   })
   .passthrough();
@@ -68,16 +68,16 @@ export interface CustomerListQuery extends ListQuery {
 export const CustomerDownloadSchema = z
   .object({
     download_id: z.string(),
-    download_url: z.string().optional(),
-    product_id: z.number().optional(),
-    product_name: z.string().optional(),
-    download_name: z.string().optional(),
-    order_id: z.number().optional(),
-    order_key: z.string().optional(),
+    download_url: z.string().nullable().optional(),
+    product_id: z.number().nullable().optional(),
+    product_name: z.string().nullable().optional(),
+    download_name: z.string().nullable().optional(),
+    order_id: z.number().nullable().optional(),
+    order_key: z.string().nullable().optional(),
     downloads_remaining: z.union([z.string(), z.number()]).optional(),
     access_expires: z.string().nullable().optional(),
     access_expires_gmt: z.string().nullable().optional(),
-    file: z.object({ name: z.string().optional(), file: z.string().optional() }).optional(),
+    file: z.object({ name: z.string().nullable().optional(), file: z.string().nullable().optional() }).optional(),
   })
   .passthrough();
 export type CustomerDownload = z.infer<typeof CustomerDownloadSchema>;

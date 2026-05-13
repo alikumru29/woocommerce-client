@@ -24,110 +24,110 @@ export type OrderStatus = z.infer<typeof OrderStatusSchema>;
 
 const AddressSchema = z
   .object({
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    company: z.string().optional(),
-    address_1: z.string().optional(),
-    address_2: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    postcode: z.string().optional(),
-    country: z.string().optional(),
-    email: z.string().optional(),
-    phone: z.string().optional(),
+    first_name: z.string().nullable().optional(),
+    last_name: z.string().nullable().optional(),
+    company: z.string().nullable().optional(),
+    address_1: z.string().nullable().optional(),
+    address_2: z.string().nullable().optional(),
+    city: z.string().nullable().optional(),
+    state: z.string().nullable().optional(),
+    postcode: z.string().nullable().optional(),
+    country: z.string().nullable().optional(),
+    email: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
   })
   .passthrough();
 
 const LineItemSchema = z
   .object({
-    id: z.number().optional(),
-    name: z.string().optional(),
-    product_id: z.number().optional(),
-    variation_id: z.number().optional(),
-    quantity: z.number().optional(),
-    tax_class: z.string().optional(),
-    subtotal: z.string().optional(),
-    subtotal_tax: z.string().optional(),
-    total: z.string().optional(),
-    total_tax: z.string().optional(),
-    sku: z.string().optional(),
+    id: z.number().nullable().optional(),
+    name: z.string().nullable().optional(),
+    product_id: z.number().nullable().optional(),
+    variation_id: z.number().nullable().optional(),
+    quantity: z.number().nullable().optional(),
+    tax_class: z.string().nullable().optional(),
+    subtotal: z.string().nullable().optional(),
+    subtotal_tax: z.string().nullable().optional(),
+    total: z.string().nullable().optional(),
+    total_tax: z.string().nullable().optional(),
+    sku: z.string().nullable().optional(),
     price: z.union([z.string(), z.number()]).optional(),
   })
   .passthrough();
 
 const ShippingLineSchema = z
   .object({
-    id: z.number().optional(),
-    method_title: z.string().optional(),
-    method_id: z.string().optional(),
-    instance_id: z.string().optional(),
-    total: z.string().optional(),
-    total_tax: z.string().optional(),
+    id: z.number().nullable().optional(),
+    method_title: z.string().nullable().optional(),
+    method_id: z.string().nullable().optional(),
+    instance_id: z.string().nullable().optional(),
+    total: z.string().nullable().optional(),
+    total_tax: z.string().nullable().optional(),
   })
   .passthrough();
 
 const FeeLineSchema = z
   .object({
-    id: z.number().optional(),
-    name: z.string().optional(),
-    tax_class: z.string().optional(),
-    tax_status: z.string().optional(),
-    total: z.string().optional(),
-    total_tax: z.string().optional(),
+    id: z.number().nullable().optional(),
+    name: z.string().nullable().optional(),
+    tax_class: z.string().nullable().optional(),
+    tax_status: z.string().nullable().optional(),
+    total: z.string().nullable().optional(),
+    total_tax: z.string().nullable().optional(),
   })
   .passthrough();
 
 const CouponLineSchema = z
   .object({
-    id: z.number().optional(),
-    code: z.string().optional(),
-    discount: z.string().optional(),
-    discount_tax: z.string().optional(),
+    id: z.number().nullable().optional(),
+    code: z.string().nullable().optional(),
+    discount: z.string().nullable().optional(),
+    discount_tax: z.string().nullable().optional(),
   })
   .passthrough();
 
 const RefundReferenceSchema = z
   .object({
     id: z.number(),
-    reason: z.string().optional(),
-    total: z.string().optional(),
+    reason: z.string().nullable().optional(),
+    total: z.string().nullable().optional(),
   })
   .passthrough();
 
 export const OrderSchema = z
   .object({
     id: z.number(),
-    parent_id: z.number().optional(),
-    number: z.string().optional(),
-    order_key: z.string().optional(),
-    created_via: z.string().optional(),
-    version: z.string().optional(),
+    parent_id: z.number().nullable().optional(),
+    number: z.string().nullable().optional(),
+    order_key: z.string().nullable().optional(),
+    created_via: z.string().nullable().optional(),
+    version: z.string().nullable().optional(),
     status: OrderStatusSchema.optional(),
-    currency: z.string().optional(),
+    currency: z.string().nullable().optional(),
     date_created: z.string().nullable().optional(),
     date_modified: z.string().nullable().optional(),
-    discount_total: z.string().optional(),
-    discount_tax: z.string().optional(),
-    shipping_total: z.string().optional(),
-    shipping_tax: z.string().optional(),
-    cart_tax: z.string().optional(),
-    total: z.string().optional(),
-    total_tax: z.string().optional(),
-    prices_include_tax: z.boolean().optional(),
-    customer_id: z.number().optional(),
-    customer_ip_address: z.string().optional(),
-    customer_user_agent: z.string().optional(),
-    customer_note: z.string().optional(),
+    discount_total: z.string().nullable().optional(),
+    discount_tax: z.string().nullable().optional(),
+    shipping_total: z.string().nullable().optional(),
+    shipping_tax: z.string().nullable().optional(),
+    cart_tax: z.string().nullable().optional(),
+    total: z.string().nullable().optional(),
+    total_tax: z.string().nullable().optional(),
+    prices_include_tax: z.boolean().nullable().optional(),
+    customer_id: z.number().nullable().optional(),
+    customer_ip_address: z.string().nullable().optional(),
+    customer_user_agent: z.string().nullable().optional(),
+    customer_note: z.string().nullable().optional(),
     billing: AddressSchema.optional(),
     shipping: AddressSchema.optional(),
-    payment_method: z.string().optional(),
-    payment_method_title: z.string().optional(),
-    transaction_id: z.string().optional(),
+    payment_method: z.string().nullable().optional(),
+    payment_method_title: z.string().nullable().optional(),
+    transaction_id: z.string().nullable().optional(),
     date_paid: z.string().nullable().optional(),
     date_completed: z.string().nullable().optional(),
-    cart_hash: z.string().optional(),
+    cart_hash: z.string().nullable().optional(),
     meta_data: z
-      .array(z.object({ id: z.number().optional(), key: z.string(), value: z.unknown() }))
+      .array(z.object({ id: z.number().nullable().optional(), key: z.string(), value: z.unknown() }))
       .optional(),
     line_items: z.array(LineItemSchema).optional(),
     tax_lines: z.array(z.unknown()).optional(),
@@ -152,10 +152,10 @@ export interface OrderListQuery extends ListQuery {
 export const OrderNoteSchema = z
   .object({
     id: z.number(),
-    author: z.string().optional(),
-    date_created: z.string().optional(),
+    author: z.string().nullable().optional(),
+    date_created: z.string().nullable().optional(),
     note: z.string(),
-    customer_note: z.boolean().optional(),
+    customer_note: z.boolean().nullable().optional(),
   })
   .passthrough();
 export type OrderNote = z.infer<typeof OrderNoteSchema>;

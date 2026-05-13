@@ -14,44 +14,44 @@ import { parseArray, parseOne } from "./_helpers.js";
  */
 
 const MetaDataSchema = z.object({
-  id: z.number().optional(),
+  id: z.number().nullable().optional(),
   key: z.string(),
   value: z.unknown(),
 });
 
 const ImageSchema = z.object({
-  id: z.number().optional(),
-  date_created: z.string().optional(),
-  date_modified: z.string().optional(),
+  id: z.number().nullable().optional(),
+  date_created: z.string().nullable().optional(),
+  date_modified: z.string().nullable().optional(),
   src: z.string(),
-  name: z.string().optional(),
-  alt: z.string().optional(),
+  name: z.string().nullable().optional(),
+  alt: z.string().nullable().optional(),
 });
 
 const ProductDimensionsSchema = z.object({
-  length: z.string().optional(),
-  width: z.string().optional(),
-  height: z.string().optional(),
+  length: z.string().nullable().optional(),
+  width: z.string().nullable().optional(),
+  height: z.string().nullable().optional(),
 });
 
 const ProductCategorySchema = z.object({
   id: z.number(),
-  name: z.string().optional(),
-  slug: z.string().optional(),
+  name: z.string().nullable().optional(),
+  slug: z.string().nullable().optional(),
 });
 
 const ProductTagSchema = z.object({
   id: z.number(),
-  name: z.string().optional(),
-  slug: z.string().optional(),
+  name: z.string().nullable().optional(),
+  slug: z.string().nullable().optional(),
 });
 
 const ProductAttributeSchema = z.object({
-  id: z.number().optional(),
+  id: z.number().nullable().optional(),
   name: z.string(),
-  position: z.number().optional(),
-  visible: z.boolean().optional(),
-  variation: z.boolean().optional(),
+  position: z.number().nullable().optional(),
+  visible: z.boolean().nullable().optional(),
+  variation: z.boolean().nullable().optional(),
   options: z.array(z.string()).optional(),
 });
 
@@ -59,49 +59,49 @@ export const ProductSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    slug: z.string().optional(),
-    permalink: z.string().optional(),
+    slug: z.string().nullable().optional(),
+    permalink: z.string().nullable().optional(),
     date_created: z.string().nullable().optional(),
     date_modified: z.string().nullable().optional(),
     type: z.enum(["simple", "grouped", "external", "variable"]).optional(),
     status: z.enum(["draft", "pending", "private", "publish"]).optional(),
-    featured: z.boolean().optional(),
+    featured: z.boolean().nullable().optional(),
     catalog_visibility: z.enum(["visible", "catalog", "search", "hidden"]).optional(),
-    description: z.string().optional(),
-    short_description: z.string().optional(),
-    sku: z.string().optional(),
-    price: z.string().optional(),
-    regular_price: z.string().optional(),
-    sale_price: z.string().optional(),
-    on_sale: z.boolean().optional(),
-    purchasable: z.boolean().optional(),
-    total_sales: z.number().optional(),
-    virtual: z.boolean().optional(),
-    downloadable: z.boolean().optional(),
+    description: z.string().nullable().optional(),
+    short_description: z.string().nullable().optional(),
+    sku: z.string().nullable().optional(),
+    price: z.string().nullable().optional(),
+    regular_price: z.string().nullable().optional(),
+    sale_price: z.string().nullable().optional(),
+    on_sale: z.boolean().nullable().optional(),
+    purchasable: z.boolean().nullable().optional(),
+    total_sales: z.number().nullable().optional(),
+    virtual: z.boolean().nullable().optional(),
+    downloadable: z.boolean().nullable().optional(),
     tax_status: z.enum(["taxable", "shipping", "none"]).optional(),
-    tax_class: z.string().optional(),
-    manage_stock: z.boolean().optional(),
+    tax_class: z.string().nullable().optional(),
+    manage_stock: z.boolean().nullable().optional(),
     stock_quantity: z.number().nullable().optional(),
     stock_status: z.enum(["instock", "outofstock", "onbackorder"]).optional(),
     backorders: z.enum(["no", "notify", "yes"]).optional(),
-    sold_individually: z.boolean().optional(),
-    weight: z.string().optional(),
+    sold_individually: z.boolean().nullable().optional(),
+    weight: z.string().nullable().optional(),
     dimensions: ProductDimensionsSchema.optional(),
-    shipping_required: z.boolean().optional(),
-    shipping_taxable: z.boolean().optional(),
-    shipping_class: z.string().optional(),
-    shipping_class_id: z.number().optional(),
-    reviews_allowed: z.boolean().optional(),
-    average_rating: z.string().optional(),
-    rating_count: z.number().optional(),
-    parent_id: z.number().optional(),
-    purchase_note: z.string().optional(),
+    shipping_required: z.boolean().nullable().optional(),
+    shipping_taxable: z.boolean().nullable().optional(),
+    shipping_class: z.string().nullable().optional(),
+    shipping_class_id: z.number().nullable().optional(),
+    reviews_allowed: z.boolean().nullable().optional(),
+    average_rating: z.string().nullable().optional(),
+    rating_count: z.number().nullable().optional(),
+    parent_id: z.number().nullable().optional(),
+    purchase_note: z.string().nullable().optional(),
     categories: z.array(ProductCategorySchema).optional(),
     tags: z.array(ProductTagSchema).optional(),
     images: z.array(ImageSchema).optional(),
     attributes: z.array(ProductAttributeSchema).optional(),
     variations: z.array(z.number()).optional(),
-    menu_order: z.number().optional(),
+    menu_order: z.number().nullable().optional(),
     meta_data: z.array(MetaDataSchema).optional(),
   })
   .passthrough();
@@ -127,13 +127,13 @@ export const ProductCategoryFullSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    slug: z.string().optional(),
-    parent: z.number().optional(),
-    description: z.string().optional(),
-    display: z.string().optional(),
+    slug: z.string().nullable().optional(),
+    parent: z.number().nullable().optional(),
+    description: z.string().nullable().optional(),
+    display: z.string().nullable().optional(),
     image: ImageSchema.nullable().optional(),
-    menu_order: z.number().optional(),
-    count: z.number().optional(),
+    menu_order: z.number().nullable().optional(),
+    count: z.number().nullable().optional(),
   })
   .passthrough();
 export type ProductCategoryFull = z.infer<typeof ProductCategoryFullSchema>;
@@ -142,9 +142,9 @@ export const ProductTagFullSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    slug: z.string().optional(),
-    description: z.string().optional(),
-    count: z.number().optional(),
+    slug: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    count: z.number().nullable().optional(),
   })
   .passthrough();
 export type ProductTagFull = z.infer<typeof ProductTagFullSchema>;
@@ -152,14 +152,14 @@ export type ProductTagFull = z.infer<typeof ProductTagFullSchema>;
 export const ProductVariationSchema = z
   .object({
     id: z.number(),
-    sku: z.string().optional(),
-    price: z.string().optional(),
-    regular_price: z.string().optional(),
-    sale_price: z.string().optional(),
+    sku: z.string().nullable().optional(),
+    price: z.string().nullable().optional(),
+    regular_price: z.string().nullable().optional(),
+    sale_price: z.string().nullable().optional(),
     stock_quantity: z.number().nullable().optional(),
     stock_status: z.enum(["instock", "outofstock", "onbackorder"]).optional(),
     attributes: z
-      .array(z.object({ id: z.number().optional(), name: z.string(), option: z.string() }))
+      .array(z.object({ id: z.number().nullable().optional(), name: z.string(), option: z.string() }))
       .optional(),
   })
   .passthrough();
@@ -169,12 +169,12 @@ export const ProductReviewSchema = z
   .object({
     id: z.number(),
     product_id: z.number(),
-    status: z.string().optional(),
-    reviewer: z.string().optional(),
-    reviewer_email: z.string().optional(),
-    review: z.string().optional(),
-    rating: z.number().optional(),
-    verified: z.boolean().optional(),
+    status: z.string().nullable().optional(),
+    reviewer: z.string().nullable().optional(),
+    reviewer_email: z.string().nullable().optional(),
+    review: z.string().nullable().optional(),
+    rating: z.number().nullable().optional(),
+    verified: z.boolean().nullable().optional(),
   })
   .passthrough();
 export type ProductReview = z.infer<typeof ProductReviewSchema>;
